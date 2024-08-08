@@ -19,8 +19,8 @@ After the execute_sql_query node is executed, the data is saved as a CSV on the 
 
 
 ```python
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/paulomuraroferreira/LLM-agents-with-docker.git
+cd LLM-agents-with-docker
 ```
 
 2. Install Dependencies:
