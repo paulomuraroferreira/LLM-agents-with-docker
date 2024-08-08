@@ -3,3 +3,4 @@ langfuse/
 .env
 src/__pycache__/
 debug.log
+data/
