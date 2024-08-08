@@ -21,16 +21,3 @@ class ConfigHandler:
             repl_result = self.repl_tool.invoke(code)
             return repl_result
 
-# class ConfigHandler:
-
-#     def __init__(self):
-
-#         self.llm = ChatOpenAI(model=os.getenv("LLM_MODEL"))
-
-#         self.repl = DockerPythonREPL()
-
-#         self.repl_tool = Tool(
-#             name="python_repl",
-#             description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
-#             func=self.repl.run,
-#         )
