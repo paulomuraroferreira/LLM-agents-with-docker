@@ -4,15 +4,19 @@ from langchain_core.pydantic_v1 import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import END, StateGraph
 import operator
-from database_handler import DatabaseHandler
-from config_handler import ConfigHandler
+from src.database_handler import DatabaseHandler
+from src.config_handler import ConfigHandler
 import pandas as pd
 import io
 import base64
 import json
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="matplotlib")
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from utils import PathInfo
+from src.utils import PathInfo
+from src.logger_setup import logger
+import shutil
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -55,14 +59,15 @@ class python_shell(BaseModel):
 
 class Agent:
 
-    def __init__(self):
+    def __init__(self, save_image=False):
         self.db = DatabaseHandler()
         self.config = ConfigHandler()
+        self.config_handler = ConfigHandler()
         self.db = self.db.db
         self.llm = self.config.llm
         self.repl_tool = self.config.repl_tool
         self.repl = self.config.repl
-        #self.langfuse_handler = self.config.langfuse_handler
+        self.save_image = save_image
 
         self.system_prompt = f"""\
                             You are an expert at PostgreSQL and Python. You have access to a PostgreSQL database \
@@ -100,8 +105,10 @@ class Agent:
                 continue
 
             # Execute SQL query
-            res = self.db.run(tool_call["args"]["select_query"], fetch="cursor").fetchall()
+            logger.info(f'Executing SQL query: {tool_call["args"]["select_query"]}')
 
+            res = self.db.run(tool_call["args"]["select_query"], fetch="cursor").fetchall()
+          
             # Convert result to Pandas DataFrame
             df_columns = tool_call["args"]["df_columns"]
             df = pd.DataFrame(res, columns=df_columns)
@@ -135,8 +142,9 @@ class Agent:
 
         for name, df in name_df_map.items():
             buffer = io.StringIO()
+            logger.info(f"Saving dataFrame {name} as a csv file.")
             df.to_csv(f'{PathInfo.CSV_PATH}/{name}.csv')
-            buffer.seek(0)  # This line might not be necessary anymore
+            buffer.seek(0)  
 
         # Code for loading the uploaded files (read from /data inside the container)
         df_code = "import pandas as pd\n" + "\n".join(
@@ -157,16 +165,15 @@ class Agent:
                 # Decode and display the image on the host machine
                 base64_str = repl_result[k]["base64_data"]
                 image_data = base64.b64decode(base64_str)
-                #display(Image(data=image_data))  # Display using IPython.display
                 image = mpimg.imread(io.BytesIO(image_data), format='png')
                 plt.imshow(image)
                 plt.axis('off')
                 plt.show()
 
-
-                #You can optionally save the image to a file:
-                with open("plot_from_docker.png", "wb") as f:
-                    f.write(image_data)
+                if self.save_image:
+                    #You can optionally save the image to a file:
+                    with open(f"{PathInfo.DATA_FOLDER_PATH}/plot_from_docker.png", "wb") as f:
+                        f.write(image_data)
 
             else:
                 # Handle non-image output
@@ -188,10 +195,9 @@ class Agent:
                 continue
 
             generated_code = tool_call["args"]["code"]
-            print('---'*100)
-            print(df_code + "\n" + generated_code)
-            print('---'*100)
-            repl_result = self.repl_tool.invoke(df_code + "\n" + generated_code)
+            #logger.info(f"Executing Python code on the docker container: \n\n\n{df_code + "\n" + generated_code}")
+
+            repl_result = self.config_handler.invoke_repl(df_code + "\n" + generated_code)
 
             messages.append(
                 RawToolMessage(

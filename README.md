@@ -1,52 +1,54 @@
-Start the postgres with 
-`systemctl status postgresql`
+# README
 
-Switch to postgres user
-`sudo -u postgres psql`
+This repository is based on the code from LangChain's Azure Container Apps Dynamic Sessions Data Analyst Notebook, where an agent reads data from a PostgreSQL database, saves it in a CSV file, and executes code based on the CSV file, such as plotting a graph.
 
-Alter password
-`ALTER USER postgres WITH PASSWORD adminadmin`
+The main feature of the code was that it executed code in a container using Azure Container Apps dynamic sessions.
 
-Exit
-`\q`
+This project replaces the Azure Container Apps dynamic sessions with docker. So when the agent executes the code, it will create a docker container, execute the code, and then remove the container. This ensures that the host machine is safe from arbitrary code from the agent.
 
-Log in
-`sudo -u postgres psql`
+The agent architecture is as follows:
 
-Create Database
-`CREATE DATABASE mydatabase;`
+![image.png](README_files/image.png)
 
-Exit
-`\q`
-
-Connect to database
-`psql -U postgres -d mydatabase -W;`
+After the execute_sql_query node is executed, the data is saved as a CSV on the host machine. The Docker container then has read-only permission to access this CSV. If it plots anything, the image is passed back to the host machine via a Base64 string.
 
 
-Populate the database
-`CREATE TABLE sales (
-    id SERIAL PRIMARY KEY,
-    sale_date DATE,
-    quantity INT,
-    unit_price NUMERIC
-);`
+## Setup Instructions
 
-Insert data
-`INSERT INTO sales (sale_date, quantity, unit_price) VALUES
-    ('2024-01-15', 100, 9.99),
-    ('2024-01-16', 50, 24.99),
-    ('2024-01-17', 75, 14.50);`
+1. Clone the repository:
 
 
-Verify
-`SELECT * FROM sales;`
+```python
+git clone <repository-url>
+cd <repository-directory>
+```
+
+2. Install Dependencies:
+
+Ensure you have Docker installed and running.
+Install required Python packages:
 
 
+```python
+pip install -r requirements.txt
+```
+
+3. Environment Configuration:
+
+Create a .env file and configure the following environment variables:
 
 
-If the port is alredy in use, it will conflict with the langfuse port. So change the
-langfuse port on /home/paulo/Python_projects/agents_docker/langfuse/docker-compose.yml from
-5432 to 5433 on     
+```python
+OPENAI_API_KEY=your_openai_api_key
+DATABASE_URL=your_postgres_url
+```
 
-ports:
-      - 5433:5432
+4. Run the Application:
+
+Start the Docker container for the Python REPL.
+Execute the main script to initialize the workflow and handle user queries:
+
+
+```python
+python main.py
+```

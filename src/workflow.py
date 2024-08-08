@@ -1,11 +1,15 @@
-from agent import AgentState, StateGraph, Agent
+from src.agent import AgentState, StateGraph, Agent
+import logging
+from langchain.globals import set_debug
+from src.logger_setup import logger
 
 class WorkFlow:
 
-    def __init__(self) -> None:
-        from langchain.globals import set_debug
-        set_debug(False)
-
+    def __init__(self, prompt, plotting_graph_structure=False, debug=False) -> None:
+        
+        set_debug(debug)
+        self.plotting_graph_structure = plotting_graph_structure
+        self.prompt = prompt
         self.agent = Agent()
 
     def setting_workflow(self):
@@ -26,10 +30,12 @@ class WorkFlow:
     def running_agent(self):
 
         self.setting_workflow()
-        print(self.app.get_graph().draw_mermaid_png(output_file_path="graph.png"))
-        output = self.app.invoke({"messages": [("human", "graph the total sales values")]})#,config={"callbacks": [langfuse_handler]})
-        print(output["messages"][-1].content)
+        if self.plotting_graph_structure:
+            self.app.get_graph().draw_mermaid_png(output_file_path="graph.png")
+
+        output = self.app.invoke({"messages": [("human", self.prompt)]})
+        
 
 if __name__ == "__main__":
-    workflow=WorkFlow()
+    workflow=WorkFlow(prompt="graph the total sales values")
     workflow.running_agent()
