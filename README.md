@@ -1,6 +1,6 @@
 # README
 
-This repository is based on the code from LangChain's Azure Container Apps Dynamic Sessions Data Analyst Notebook, where an agent reads data from a PostgreSQL database, saves it in a CSV file, and executes code based on the CSV file, such as plotting a graph.
+This repository is based on the code from LangChain's Azure Container Apps Dynamic Sessions Data Analyst Notebook (https://github.com/langchain-ai/langchain/blob/master/cookbook/azure_container_apps_dynamic_sessions_data_analyst.ipynb), where an agent reads data from a PostgreSQL database, saves it in a CSV file, and executes code based on the CSV file, such as plotting a graph.
 
 The main feature of the code was that it executed code in a container using Azure Container Apps dynamic sessions.
 
