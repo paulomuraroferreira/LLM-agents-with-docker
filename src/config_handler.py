@@ -2,8 +2,9 @@ from langchain_openai import ChatOpenAI
 from src.docker_container import DockerPythonREPL
 from langchain_core.tools import Tool
 import os
+from utils import PathInfo
 from dotenv import load_dotenv
-load_dotenv() 
+load_dotenv(dotenv_path=PathInfo.ENV_FILE_PATH) 
 
 class ConfigHandler:
     def __init__(self):
