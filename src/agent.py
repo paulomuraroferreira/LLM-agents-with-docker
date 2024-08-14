@@ -162,7 +162,7 @@ class Agent:
             # Any image results are returned as a dict of the form:
             # {"type": "image", "base64_data": "..."}
             if isinstance(repl_result[k], dict) and repl_result[k]["type"] == "image":
-                # Decode and display the image on the host machine
+                warnings.filterwarnings("ignore", category=UserWarning, message=".*Matplotlib.*GUI.*")
                 base64_str = repl_result[k]["base64_data"]
                 image_data = base64.b64decode(base64_str)
                 image = mpimg.imread(io.BytesIO(image_data), format='png')
@@ -195,7 +195,6 @@ class Agent:
                 continue
 
             generated_code = tool_call["args"]["code"]
-            #logger.info(f"Executing Python code on the docker container: \n\n\n{df_code + "\n" + generated_code}")
 
             repl_result = self.config_handler.invoke_repl(df_code + "\n" + generated_code)
 

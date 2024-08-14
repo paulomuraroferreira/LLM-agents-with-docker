@@ -1,4 +1,5 @@
 from src.workflow import WorkFlow
 
-workflow=WorkFlow(prompt="graph the total sales values")
+prompt = input('Agent input:\n')
+workflow=WorkFlow(prompt=prompt)
 workflow.running_agent()

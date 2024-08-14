@@ -77,6 +77,7 @@ class DockerPythonREPL:
         output = result.output.decode()
 
         if 'PLOT_BASE64:' in output:
+            logger.info("Passing the base 64 image representation back to the host machine...")
             plot_data = output.split('PLOT_BASE64:')[1].strip()
             return {"figure_1": {"type": "image", "base64_data": plot_data},
                     "output": output}

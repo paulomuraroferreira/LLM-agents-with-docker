@@ -5,7 +5,6 @@ import os
 from dotenv import load_dotenv
 load_dotenv() 
 
-
 class ConfigHandler:
     def __init__(self):
         self.llm = ChatOpenAI(model=os.getenv("LLM_MODEL"))
@@ -17,7 +16,7 @@ class ConfigHandler:
         )
 
     def invoke_repl(self, code):
-        with self.repl:  # Use the context manager here
+        with self.repl:  
             repl_result = self.repl_tool.invoke(code)
             return repl_result
 
