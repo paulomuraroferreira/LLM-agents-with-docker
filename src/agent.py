@@ -17,6 +17,7 @@ import matplotlib.image as mpimg
 from src.utils import PathInfo
 from src.logger_setup import logger
 import shutil
+from langfuse.callback import CallbackHandler
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -68,6 +69,7 @@ class Agent:
         self.repl_tool = self.config.repl_tool
         self.repl = self.config.repl
         self.save_image = save_image
+        self.langfuse_handler = CallbackHandler()
 
         self.system_prompt = f"""\
                             You are an expert at PostgreSQL and Python. You have access to a PostgreSQL database \
@@ -92,7 +94,7 @@ class Agent:
         messages = []
 
         chain = self.prompt | self.llm.bind_tools([create_df_from_sql, python_shell])
-        messages.append(chain.invoke({"messages": state["messages"]}))
+        messages.append(chain.invoke({"messages": state["messages"]},config={"callbacks": [self.langfuse_handler]}))
 
         return {"messages": messages}
 
