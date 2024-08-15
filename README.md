@@ -26,7 +26,7 @@ cd LLM-agents-with-docker
 2. Install Dependencies:
 
 ```python
-    pip install -e .
+$pip install -e .
 ```
 
 Also, ensure you have Docker installed and running.
