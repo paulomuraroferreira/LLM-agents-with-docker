@@ -33,8 +33,7 @@ Also, ensure you have Docker installed and running.
 
 3. Environment Configuration:
 
-Create a .env file and configure the following environment variables:
-
+Create a .env file and fill the following environment variables:
 
 ```python
 OPENAI_API_KEY=your_openai_api_key
