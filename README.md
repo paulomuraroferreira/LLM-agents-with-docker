@@ -1,6 +1,6 @@
 # README
 
-<iframe width="560" height="315" src="https://www.youtube.com/watch?v=uGqmn2xdU54" frameborder="0" allowfullscreen></iframe>
+![Demo GIF](/home/paulo/Python_projects/GeneralCode/agent_docker.gif)
 
 This repository is based on the code from LangChain's Azure Container Apps Dynamic Sessions Data Analyst Notebook (https://github.com/langchain-ai/langchain/blob/master/cookbook/azure_container_apps_dynamic_sessions_data_analyst.ipynb), where an agent reads data from a PostgreSQL database, saves it in a CSV file, and executes code based on the CSV file, such as plotting a graph.
 
