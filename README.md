@@ -25,7 +25,10 @@ cd LLM-agents-with-docker
 
 2. Install Dependencies:
 
+    pip install -e .
+
 Ensure you have Docker installed and running.
+
 Install required Python packages:
 
 
@@ -41,13 +44,12 @@ Create a .env file and configure the following environment variables:
 ```python
 OPENAI_API_KEY=your_openai_api_key
 DATABASE_URL=your_postgres_url
+LLM_MODEL=i am using 'gpt-4o'
 ```
 
 4. Run the Application:
 
-Start the Docker container for the Python REPL.
 Execute the main script to initialize the workflow and handle user queries:
-
 
 ```python
 python main.py
