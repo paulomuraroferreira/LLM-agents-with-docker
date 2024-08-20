@@ -18,6 +18,7 @@ from src.utils import PathInfo
 from src.logger_setup import logger
 import shutil
 from langfuse.callback import CallbackHandler
+from src.tools_schema import create_df_from_sql, python_shell
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -32,31 +33,6 @@ class RawToolMessage(ToolMessage):
     tool_name: str
     """Name of tool that generated output."""
 
-# Tool schema for querying SQL db
-class create_df_from_sql(BaseModel):
-    """Execute a PostgreSQL SELECT statement and use the results to create a DataFrame with the given column names."""
-
-    select_query: str = Field(..., description="A PostgreSQL SELECT statement.")
-    # We're going to convert the results to a Pandas DataFrame that we pass
-    # to the code intepreter, so we also have the model generate useful column and
-    # variable names for this DataFrame that the model will refer to when writing
-    # python code.
-    df_columns: List[str] = Field(
-        ..., description="Ordered names to give the DataFrame columns."
-    )
-    df_name: str = Field(
-        ..., description="The name to give the DataFrame variable in downstream code."
-    )
-
-
-# Tool schema for writing Python code
-class python_shell(BaseModel):
-    """Execute Python code that analyzes the DataFrames that have been generated. Make sure to print any important results."""
-
-    code: str = Field(
-        ...,
-        description="The code to execute. Make sure to print any important results.",
-    )
 
 class Agent:
 
@@ -94,7 +70,7 @@ class Agent:
         messages = []
 
         chain = self.prompt | self.llm.bind_tools([create_df_from_sql, python_shell])
-        messages.append(chain.invoke({"messages": state["messages"]},config={"callbacks": [self.langfuse_handler]}))
+        messages.append(chain.invoke({"messages": state["messages"]}))
 
         return {"messages": messages}
 
@@ -184,7 +160,6 @@ class Agent:
 
         return json.dumps(content, indent=2)
 
-
     def execute_python(self, state: AgentState) -> dict:
         """
         Execute the latest generated Python code.
@@ -197,9 +172,15 @@ class Agent:
             if tool_call["name"] != "python_shell":
                 continue
 
-            generated_code = tool_call["args"]["code"]
+            #generated_code = tool_call["args"]["code"]
 
-            repl_result = self.config_handler.invoke_repl(df_code + "\n" + generated_code)
+            code_dict = {'code_to_load_csv': df_code,
+                        'imports': tool_call["args"]["imports"],
+                        'code_block_without_imports': tool_call["args"]["code"],}
+            
+            repl_result = self.config_handler.invoke_repl(code_dict)
+
+            #repl_result = self.config_handler.invoke_repl(df_code + "\n" + generated_code)
 
             messages.append(
                 RawToolMessage(

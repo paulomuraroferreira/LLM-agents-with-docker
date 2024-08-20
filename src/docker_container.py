@@ -53,24 +53,28 @@ class DockerPythonREPL:
         elif self.verbose:
             logger.info(f"Package {package_name} installed successfully")
 
-    def run(self, code):
+    def run(self, **code):
         if not self.container or self.container.status != 'running':
             self.start_container()
 
-        for line in code.split('\n'):
-            if line.strip().startswith('import ') or line.strip().startswith('from '):
-                package = line.split()[1].split('.')[0]
-                self.install_package(package)
+        code_to_load_csv = code['code_to_load_csv']
+        imports = code['imports']
+        code_block_without_imports = code['code_block_without_imports']    
 
-        code = "import matplotlib\nmatplotlib.use('Agg')\n" + code
+        for line in imports.split('\n'):
+            package = line.split()[1].split('.')[0]
+            self.install_package(package)
 
-        if 'import matplotlib.pyplot as plt' in code or 'from matplotlib import pyplot as plt' in code:
-            code += "\n\nimport io\nimport base64\nbuf = io.BytesIO()\nplt.savefig(buf, format='png')\nbuf.seek(0)\nplot_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')\nprint('PLOT_BASE64:' + plot_base64)\nplt.close()"
+        if 'import matplotlib.pyplot as plt' in imports or 'from matplotlib import pyplot as plt' in imports:
+            code_block_without_imports = "import matplotlib\nmatplotlib.use('Agg')\n" + code_block_without_imports
+            code_block_without_imports += "\n\nimport io\nimport base64\nbuf = io.BytesIO()\nplt.savefig(buf, format='png')\nbuf.seek(0)\nplot_base64 = base64.b64encode(buf.getvalue()).decode('utf-8')\nprint('PLOT_BASE64:' + plot_base64)\nplt.close()"
 
-        exec_command = f"python -c \"{code}\""
+        code_to_be_executed = imports + '\n' + code_to_load_csv + '\n' + code_block_without_imports
+
+        exec_command = f"python -c \"{code_to_be_executed}\""
 
         if self.verbose:
-            logger.info(f"Executing code in container: \n\n{code}\n\n")
+            logger.info(f"Executing code in container: \n\n{code_to_be_executed}\n\n")
 
         result = self.container.exec_run(exec_command)
 
