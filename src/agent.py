@@ -96,7 +96,7 @@ class Agent:
             messages.append(
                 RawToolMessage(
                     f"Generated dataframe {df_name} with columns {df_columns}",  # What's sent to model.
-                    #raw={df_name: df},
+                    raw={df_name: df},
                     tool_call_id=tool_call["id"],
                     tool_name=tool_call["name"],
                 )
