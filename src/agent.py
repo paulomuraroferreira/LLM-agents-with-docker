@@ -28,7 +28,7 @@ class RawToolMessage(ToolMessage):
     Customized Tool message that lets us pass around the raw tool outputs (along with string contents for passing back to the model).
     """
 
-    raw: dict
+    #raw: dict
     """Arbitrary (non-string) tool outputs. Won't be sent to model."""
     tool_name: str
     """Name of tool that generated output."""
@@ -96,7 +96,7 @@ class Agent:
             messages.append(
                 RawToolMessage(
                     f"Generated dataframe {df_name} with columns {df_columns}",  # What's sent to model.
-                    raw={df_name: df},
+                    #raw={df_name: df},
                     tool_call_id=tool_call["id"],
                     tool_name=tool_call["name"],
                 )
@@ -185,7 +185,7 @@ class Agent:
             messages.append(
                 RawToolMessage(
                     self._repl_result_to_msg_content(repl_result),
-                    raw=repl_result,
+                    #raw=repl_result,
                     tool_call_id=tool_call["id"],
                     tool_name=tool_call["name"],
                 )

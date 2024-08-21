@@ -5,3 +5,4 @@ src/__pycache__/
 debug.log
 .venv/
 src/LLM_Agent_with_docker.egg-info/
+LLM_Agent_with_docker.egg-info/
