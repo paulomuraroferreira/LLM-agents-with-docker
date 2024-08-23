@@ -25,5 +25,8 @@ class ConfigHandler:
 
         with self.repl:  
             repl_result = self.repl_tool.invoke(code)
+            print('\n\n\n\n\n', '****'*10, '\n\n\n\n\n')
+            print(repl_result)
+            print('\n\n\n\n\n', '****'*10, '\n\n\n\n\n')
             return repl_result
 

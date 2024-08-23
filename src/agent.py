@@ -108,6 +108,10 @@ class Agent:
                 )
             )
 
+            logger.info(f"SQL query executed successfully: {tool_call['args']['select_query']}\n")
+            logger.info(f"Updated messages: {messages}\n\n")
+            
+
         return {"messages": messages}
 
     def _upload_dfs_to_repl(self, state: AgentState) -> str:
@@ -175,6 +179,8 @@ class Agent:
                         'imports': tool_call["args"]["imports"],
                         'code_block_without_imports': tool_call["args"]["code"],}
             
+            logger.info(f"Executing Python code: {code_dict}\n\n")
+            
             repl_result = self.config_handler.invoke_repl(code_dict)
 
             messages.append(
@@ -191,16 +197,24 @@ class Agent:
         """
         If any Tool messages were generated in the last cycle that means we need to call the model again to interpret the latest results.
         """
+        logger.info(f"State Before Checkpointing: {state['messages']}") 
         last_message = state["messages"][-1]
         if last_message.tool_calls:
             # Check if the last tool call was 'python_shell' and it returned a result
             last_tool_call = last_message.tool_calls[-1]
+            logger.info(f"\n\nLast tool call: {last_tool_call}\n\n")
+            logger.info(f'\n\nlast_tool_call.get("output"): {last_tool_call.get("output")}\n\n')
+            logger.info(f'\n\nlast_tool_call["name"]: {last_tool_call["name"]}\n\n')
             if last_tool_call["name"] == "python_shell" and last_tool_call.get("output"):
+                logger.info(f"State After Checkpointing: {state['messages']}")  # Add this line
                 return END  # Stop the loop if python_shell returned a result
             else:
+                logger.info(f"State After Checkpointing: {state['messages']}")  # Add this line
                 return "execute_sql_query"
         else:
+            logger.info(f"State After Checkpointing: {state['messages']}")  # Add this line
             return END
+        
         
 
 

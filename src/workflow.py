@@ -38,8 +38,8 @@ class WorkFlow:
         self.workflow.add_edge("execute_sql_query", "execute_python")
         self.workflow.add_edge("execute_python", "call_model")
         self.workflow.add_conditional_edges("call_model", self.agent.should_continue)
-        self.app = self.workflow.compile(debug=True)
-        #self.app = self.workflow.compile(checkpointer=self.memory, interrupt_before=["execute_sql_query"], debug=True)
+        #self.app = self.workflow.compile(debug=True)
+        self.app = self.workflow.compile(checkpointer=self.memory, interrupt_before=["execute_sql_query"], debug=False)
 
     def running_agent(self):
 
@@ -55,8 +55,10 @@ class WorkFlow:
 
   
         #output = self.app.invoke({"messages": [("human", self.prompt)]})
-        for event in self.app.stream({"messages": [("human", self.prompt)]}, self.thread, stream_mode="values"):
-            logger.info(event)
+        # for event in self.app.stream({"messages": [("human", self.prompt)]}, self.thread, stream_mode="values"):
+        #     logger.info(event)
+        self.app.invoke({"messages": [("human", self.prompt)]}, self.thread)
+        #     logger.info(event)
 
         #Getting the SQL query        
         # arguments_str = event['messages'][1].additional_kwargs['tool_calls'][0]['function']['arguments']
@@ -64,14 +66,14 @@ class WorkFlow:
         # select_query = arguments_dict['select_query']
         # logger.info(f'\n\n\nQUERY: {select_query}\n' )
 
-        # user_approval = 'yes'#input("Do you want to go execute the query? (yes/no): ")
-        # from pprint import pprint
-        # if user_approval.lower() == "yes":
-        #     # If approved, continue the graph execution
-        #     #self.app.invoke(None, self.thread)
-        #     for event in self.app.stream(None, config = self.thread, stream_mode="values"):
-        #         print('\n'*5)
-        #         pprint(event)
+        user_approval = 'yes'#input("Do you want to go execute the query? (yes/no): ")
+        from pprint import pprint
+        if user_approval.lower() == "yes":
+            # If approved, continue the graph execution
+            self.app.invoke(None, self.thread)
+            # for event in self.app.stream(None, config = self.thread, stream_mode="values"):
+            #     print('\n'*5)
+            #     pprint(event)
 
 
         # else:
