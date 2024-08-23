@@ -3,7 +3,7 @@ from src.docker_container import DockerPythonREPL
 from langchain_core.tools import Tool
 import os
 from langfuse.callback import CallbackHandler
-from utils import PathInfo
+from src.utils import PathInfo
 from langchain_core.tools import StructuredTool
 from dotenv import load_dotenv
 load_dotenv(dotenv_path=PathInfo.ENV_FILE_PATH) 

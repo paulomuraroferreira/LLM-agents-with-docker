@@ -19,6 +19,8 @@ from src.logger_setup import logger
 import shutil
 from langfuse.callback import CallbackHandler
 from src.tools_schema import create_df_from_sql, python_shell
+from io import StringIO
+
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
@@ -28,7 +30,7 @@ class RawToolMessage(ToolMessage):
     Customized Tool message that lets us pass around the raw tool outputs (along with string contents for passing back to the model).
     """
 
-    #raw: dict
+    raw: dict
     """Arbitrary (non-string) tool outputs. Won't be sent to model."""
     tool_name: str
     """Name of tool that generated output."""
@@ -72,6 +74,8 @@ class Agent:
         chain = self.prompt | self.llm.bind_tools([create_df_from_sql, python_shell])
         messages.append(chain.invoke({"messages": state["messages"]}))
 
+        logger.info(f"call_model response: {messages[-1]}")
+
         return {"messages": messages}
 
     def execute_sql_query(self, state: AgentState) -> dict:
@@ -92,11 +96,13 @@ class Agent:
             df = pd.DataFrame(res, columns=df_columns)
             df_name = tool_call["args"]["df_name"]
 
+            df.to_csv(f'{PathInfo.CSV_PATH}/{df_name}.csv')
+
             # Add tool output message
             messages.append(
                 RawToolMessage(
                     f"Generated dataframe {df_name} with columns {df_columns}",  # What's sent to model.
-                    raw={df_name: df},
+                    raw={df_name: df.to_json(orient='records', lines=False)},
                     tool_call_id=tool_call["id"],
                     tool_name=tool_call["name"],
                 )
@@ -118,12 +124,13 @@ class Agent:
         ]
         name_df_map = {name: df for df_dict in df_dicts for name, df in df_dict.items()}
 
-        for name, df in name_df_map.items():
+        # for name, df in name_df_map.items():
             
-            buffer = io.StringIO()
-            logger.info(f"Saving dataFrame {name} as a csv file.")
-            df.to_csv(f'{PathInfo.CSV_PATH}/{name}.csv')
-            buffer.seek(0)  
+        #     buffer = io.StringIO()
+        #     logger.info(f"Saving dataFrame {name} as a csv file.")
+        #     df = pd.read_json(StringIO(df), orient='records')
+        #     df.to_csv(f'{PathInfo.CSV_PATH}/{name}.csv')
+        #     buffer.seek(0)  
 
         # Code for loading the uploaded files (read from /data inside the container)
         df_code = "import pandas as pd\n" + "\n".join(
@@ -185,7 +192,7 @@ class Agent:
             messages.append(
                 RawToolMessage(
                     self._repl_result_to_msg_content(repl_result),
-                    #raw=repl_result,
+                    raw=repl_result,
                     tool_call_id=tool_call["id"],
                     tool_name=tool_call["name"],
                 )
@@ -206,3 +213,8 @@ class Agent:
                 return "execute_sql_query"
         else:
             return END
+        
+
+
+
+
