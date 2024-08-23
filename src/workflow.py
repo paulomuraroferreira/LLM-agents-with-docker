@@ -38,8 +38,8 @@ class WorkFlow:
         self.workflow.add_edge("execute_sql_query", "execute_python")
         self.workflow.add_edge("execute_python", "call_model")
         self.workflow.add_conditional_edges("call_model", self.agent.should_continue)
-        #self.app = self.workflow.compile()
-        self.app = self.workflow.compile(checkpointer=self.memory, interrupt_before=["execute_sql_query"], debug=True)
+        self.app = self.workflow.compile(debug=True)
+        #self.app = self.workflow.compile(checkpointer=self.memory, interrupt_before=["execute_sql_query"], debug=True)
 
     def running_agent(self):
 
@@ -64,18 +64,18 @@ class WorkFlow:
         # select_query = arguments_dict['select_query']
         # logger.info(f'\n\n\nQUERY: {select_query}\n' )
 
-        user_approval = 'yes'#input("Do you want to go execute the query? (yes/no): ")
-        from pprint import pprint
-        if user_approval.lower() == "yes":
-            # If approved, continue the graph execution
-            #self.app.invoke(None, self.thread)
-            for event in self.app.stream(None, config = self.thread, stream_mode="values"):
-                print('\n'*5)
-                pprint(event)
+        # user_approval = 'yes'#input("Do you want to go execute the query? (yes/no): ")
+        # from pprint import pprint
+        # if user_approval.lower() == "yes":
+        #     # If approved, continue the graph execution
+        #     #self.app.invoke(None, self.thread)
+        #     for event in self.app.stream(None, config = self.thread, stream_mode="values"):
+        #         print('\n'*5)
+        #         pprint(event)
 
 
-        else:
-            logger.info("Operation cancelled by user.")
+        # else:
+        #     logger.info("Operation cancelled by user.")
 
 
 

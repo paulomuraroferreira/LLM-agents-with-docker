@@ -124,14 +124,6 @@ class Agent:
         ]
         name_df_map = {name: df for df_dict in df_dicts for name, df in df_dict.items()}
 
-        # for name, df in name_df_map.items():
-            
-        #     buffer = io.StringIO()
-        #     logger.info(f"Saving dataFrame {name} as a csv file.")
-        #     df = pd.read_json(StringIO(df), orient='records')
-        #     df.to_csv(f'{PathInfo.CSV_PATH}/{name}.csv')
-        #     buffer.seek(0)  
-
         # Code for loading the uploaded files (read from /data inside the container)
         df_code = "import pandas as pd\n" + "\n".join(
             f"{name} = pd.read_csv('/data/{name}.csv')" for name in name_df_map  
@@ -179,15 +171,11 @@ class Agent:
             if tool_call["name"] != "python_shell":
                 continue
 
-            #generated_code = tool_call["args"]["code"]
-
             code_dict = {'code_to_load_csv': df_code,
                         'imports': tool_call["args"]["imports"],
                         'code_block_without_imports': tool_call["args"]["code"],}
             
             repl_result = self.config_handler.invoke_repl(code_dict)
-
-            #repl_result = self.config_handler.invoke_repl(df_code + "\n" + generated_code)
 
             messages.append(
                 RawToolMessage(
