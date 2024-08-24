@@ -10,7 +10,7 @@ This project replaces the Azure Container Apps dynamic sessions with docker. So 
 
 The agent architecture is as follows:
 
-![image.png](README_files/image.png)
+![image.png](README_files/graph.png)
 
 After the execute_sql_query node is executed, the data is saved as a CSV on the host machine. The Docker container then has read-only permission to access this CSV. If it plots anything, the image is passed back to the host machine via a Base64 string.
 
