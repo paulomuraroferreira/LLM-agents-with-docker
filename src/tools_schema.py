@@ -1,6 +1,7 @@
 from langchain_core.pydantic_v1 import BaseModel, Field
 from typing import Annotated, List, Sequence, TypedDict
 # Tool schema for querying SQL db
+
 class create_df_from_sql(BaseModel):
     """Execute a PostgreSQL SELECT statement and use the results to create a DataFrame with the given column names."""
 

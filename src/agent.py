@@ -16,25 +16,11 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from src.utils import PathInfo
 from src.logger_setup import logger
-import shutil
 from langfuse.callback import CallbackHandler
 from src.tools_schema import create_df_from_sql, python_shell
-from io import StringIO
-
 
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], operator.add]
-
-class RawToolMessage(ToolMessage):
-    """
-    Customized Tool message that lets us pass around the raw tool outputs (along with string contents for passing back to the model).
-    """
-
-    raw: dict
-    """Arbitrary (non-string) tool outputs. Won't be sent to model."""
-    tool_name: str
-    """Name of tool that generated output."""
-
 
 class Agent:
 
@@ -99,14 +85,16 @@ class Agent:
             df.to_csv(f'{PathInfo.CSV_PATH}/{df_name}.csv')
 
             # Add tool output message
-            messages.append(
-                RawToolMessage(
-                    f"Generated dataframe {df_name} with columns {df_columns}",  # What's sent to model.
-                    raw={df_name: df.to_json(orient='records', lines=False)},
-                    tool_call_id=tool_call["id"],
-                    tool_name=tool_call["name"],
-                )
-            )
+            tool_output = {'df_name': df_name, 
+                           'content': f"Generated dataframe {df_name} with columns {df_columns}",
+                           'tool_call_id': tool_call["id"],
+                           'tool_name': tool_call["name"]}
+
+            messages.append(ToolMessage(
+                content=f"Generated dataframe {df_name} with columns {df_columns}",
+                artifact=tool_output,
+                tool_call_id=tool_call["id"]
+            ))
 
             logger.info(f"SQL query executed successfully: {tool_call['args']['select_query']}\n")
             logger.info(f"Updated messages: {messages}\n\n")
@@ -121,16 +109,15 @@ class Agent:
         Note that code interpreter sessions are short-lived, so this needs to be done
         every agent cycle, even if the dfs were previously uploaded.
         """
-        df_dicts = [
-            msg.raw
-            for msg in state["messages"]
-            if isinstance(msg, RawToolMessage) and msg.tool_name == "create_df_from_sql"
-        ]
-        name_df_map = {name: df for df_dict in df_dicts for name, df in df_dict.items()}
 
-        # Code for loading the uploaded files (read from /data inside the container)
+        df_dicts = [
+            msg.artifact['df_name']
+            for msg in state["messages"]
+            if isinstance(msg, ToolMessage) and msg.artifact['tool_name'] == "create_df_from_sql"
+        ]
+
         df_code = "import pandas as pd\n" + "\n".join(
-            f"{name} = pd.read_csv('/data/{name}.csv')" for name in name_df_map  
+            f"{name} = pd.read_csv('/data/{name}.csv')" for name in df_dicts  
         )
         return df_code
 
@@ -183,40 +170,30 @@ class Agent:
             
             repl_result = self.config_handler.invoke_repl(code_dict)
 
+            content_ = self._repl_result_to_msg_content(repl_result).split('PLOT_BASE64:')[0].strip() + 'PLOT_BASE64: ...'
+
             messages.append(
-                RawToolMessage(
-                    self._repl_result_to_msg_content(repl_result),
-                    raw=repl_result,
+                ToolMessage(
+                    content = content_,
+                    artifact= content_,
                     tool_call_id=tool_call["id"],
-                    tool_name=tool_call["name"],
                 )
             )
+
         return {"messages": messages}
 
     def should_continue(self, state: AgentState) -> str:
         """
         If any Tool messages were generated in the last cycle that means we need to call the model again to interpret the latest results.
         """
-        logger.info(f"State Before Checkpointing: {state['messages']}") 
         last_message = state["messages"][-1]
         if last_message.tool_calls:
             # Check if the last tool call was 'python_shell' and it returned a result
             last_tool_call = last_message.tool_calls[-1]
-            logger.info(f"\n\nLast tool call: {last_tool_call}\n\n")
-            logger.info(f'\n\nlast_tool_call.get("output"): {last_tool_call.get("output")}\n\n')
-            logger.info(f'\n\nlast_tool_call["name"]: {last_tool_call["name"]}\n\n')
             if last_tool_call["name"] == "python_shell" and last_tool_call.get("output"):
-                logger.info(f"State After Checkpointing: {state['messages']}")  # Add this line
                 return END  # Stop the loop if python_shell returned a result
             else:
-                logger.info(f"State After Checkpointing: {state['messages']}")  # Add this line
                 return "execute_sql_query"
         else:
             logger.info(f"State After Checkpointing: {state['messages']}")  # Add this line
             return END
-        
-        
-
-
-
-
