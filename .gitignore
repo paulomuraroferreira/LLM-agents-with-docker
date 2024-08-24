@@ -5,3 +5,8 @@ src/__pycache__/
 debug.log
 .venv/
 ./LLM_Agent_with_docker.egg-info/
+LLM_Agent_with_docker.egg-info/dependency_links.txt
+LLM_Agent_with_docker.egg-info/PKG-INFO
+LLM_Agent_with_docker.egg-info/requires.txt
+LLM_Agent_with_docker.egg-info/SOURCES.txt
+LLM_Agent_with_docker.egg-info/top_level.txt
