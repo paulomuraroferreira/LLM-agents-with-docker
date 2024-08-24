@@ -11,7 +11,7 @@ from langgraph.graph import StateGraph
 
 class WorkFlow:
 
-    def __init__(self, prompt, plotting_graph_structure=False, 
+    def __init__(self, prompt, plotting_graph_structure=True, 
                  is_in_debug_mode:str=False, is_verbose:bool=False,
                  sql_saver_checkpoint:bool=False) -> None:
         
@@ -44,12 +44,13 @@ class WorkFlow:
 
         self.setting_workflow()
         if self.plotting_graph_structure:
-            self.app.get_graph().draw_mermaid_png(output_file_path="graph.png")
+            self.app.get_graph().draw_mermaid_png(output_file_path="./README_files/graph.png")
 
         inputs = {"messages": [("human", self.prompt)]}
 
         for event in self.app.stream(inputs, self.thread, stream_mode="values"):
-            logger.info(event)
+            # logger.info(event)
+            pass
 
         #Getting the SQL query        
         arguments_str = event['messages'][1].additional_kwargs['tool_calls'][0]['function']['arguments']

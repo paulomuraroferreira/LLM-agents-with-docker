@@ -2,7 +2,6 @@ from langchain_openai import ChatOpenAI
 from src.docker_container import DockerPythonREPL
 from langchain_core.tools import Tool
 import os
-from langfuse.callback import CallbackHandler
 from src.utils import PathInfo
 from langchain_core.tools import StructuredTool
 from dotenv import load_dotenv
@@ -19,7 +18,6 @@ class ConfigHandler:
             func=self.repl.run,
             args_schema=python_code,
         )
-        self.langfuse_handler = CallbackHandler()
 
     def invoke_repl(self, code: dict):
 

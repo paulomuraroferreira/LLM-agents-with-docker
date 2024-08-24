@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from src.utils import PathInfo
 from src.logger_setup import logger
-from langfuse.callback import CallbackHandler
 from src.tools_schema import create_df_from_sql, python_shell
 
 class AgentState(TypedDict):
@@ -33,7 +32,6 @@ class Agent:
         self.repl_tool = self.config.repl_tool
         self.repl = self.config.repl
         self.save_image = save_image
-        self.langfuse_handler = CallbackHandler()
 
         self.system_prompt = f"""\
                             You are an expert at PostgreSQL and Python. You have access to a PostgreSQL database \
@@ -60,7 +58,7 @@ class Agent:
         chain = self.prompt | self.llm.bind_tools([create_df_from_sql, python_shell])
         messages.append(chain.invoke({"messages": state["messages"]}))
 
-        logger.info(f"call_model response: {messages[-1]}")
+        #logger.info(f"call_model response: {messages[-1]}")
 
         return {"messages": messages}
 
@@ -97,7 +95,7 @@ class Agent:
             ))
 
             logger.info(f"SQL query executed successfully: {tool_call['args']['select_query']}\n")
-            logger.info(f"Updated messages: {messages}\n\n")
+           
             
 
         return {"messages": messages}
@@ -195,5 +193,4 @@ class Agent:
             else:
                 return "execute_sql_query"
         else:
-            logger.info(f"State After Checkpointing: {state['messages']}")  # Add this line
             return END
