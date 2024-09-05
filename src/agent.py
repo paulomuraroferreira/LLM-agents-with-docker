@@ -58,8 +58,6 @@ class Agent:
         chain = self.prompt | self.llm.bind_tools([create_df_from_sql, python_shell])
         messages.append(chain.invoke({"messages": state["messages"]}))
 
-        #logger.info(f"call_model response: {messages[-1]}")
-
         return {"messages": messages}
 
     def execute_sql_query(self, state: AgentState) -> dict:

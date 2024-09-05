@@ -1,6 +1,5 @@
 from langchain_core.pydantic_v1 import BaseModel, Field
 from typing import Annotated, List, Sequence, TypedDict
-# Tool schema for querying SQL db
 
 class create_df_from_sql(BaseModel):
     """Execute a PostgreSQL SELECT statement and use the results to create a DataFrame with the given column names."""
@@ -21,14 +20,8 @@ class create_df_from_sql(BaseModel):
 class python_shell(BaseModel):
     """Execute Python code that analyzes the DataFrames that have been generated. Make sure to print any important results."""
 
-    #prefix: str = Field(description="Description of the problem and approach")
     imports: str = Field(description="Code block import statements")
     code: str = Field(description="Code block not including import statements. Make sure to print any important results.")
-
-    # code: str = Field(
-    #     ...,
-    #     description="The code to execute. Make sure to print any important results.",
-    # )
 
 
 # Tool schema for writing Python code
