@@ -93,10 +93,9 @@ class Agent:
             ))
 
             logger.info(f"SQL query executed successfully: {tool_call['args']['select_query']}\n")
-           
-            
 
         return {"messages": messages}
+
 
     def _upload_dfs_to_repl(self, state: AgentState) -> str:
         """
